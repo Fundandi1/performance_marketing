@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+
+{% block title %}Campaign Marketplace - Performance Marketing Platform{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Campaign Marketplace</h1>
+                <p class="text-gray-600 mt-2">Discover and bid on exciting marketing opportunities</p>
+            </div>
+            <div class="text-right">
+                <div class="text-sm text-gray-500">
+                    <span class="font-medium">{{ total_campaigns }}</span> active campaigns
+                </div>
+                <div class="text-sm text-gray-500">
+                    <span class="font-medium">{{ total_agencies }}</span> competing agencies
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+        <form method="get" class="space-y-4 md:space-y-0 md:flex md:items-end md:space-x-4">
+            <!-- Search -->
+            <div class="flex-1">
+                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                <input type="text" id="search" name="search" value="{{ current_search }}" 
+                       placeholder="Search campaigns, brands, or descriptions..."
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+
+            <!-- Platform Filter -->
+            <div>
+                <label for="platform" class="block text-sm font-medium text-gray-700 mb-1">Platform</label>
+                <select id="platform" name="platform" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">All Platforms</option>
+                    {% for value, label in platforms %}
+                        <option value="{{ value }}" {% if current_platform == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Budget Filter -->
+            <div>
+                <label for="budget" class="block text-sm font-medium text-gray-700 mb-1">Budget Range</label>
+                <select id="budget" name="budget" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">All Budgets</option>
+                    {% for value, label in budget_ranges %}
+                        <option value="{{ value }}" {% if current_budget == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Submit -->
+            <div>
+                <button type="submit" 
+                        class="w-full md:w-auto px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                    <i class="fas fa-search mr-2"></i>
+                    Filter
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Campaign Cards -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {% for campaign in campaigns %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow bid-card">
+                <!-- Header with Featured Badge -->
+                {% if campaign.is_featured %}
+                    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 text-sm font-medium">
+                        <i class="fas fa-star mr-2"></i>
+                        Featured Opportunity
+                    </div>
+                {% endif %}
+
+                <!-- Campaign Content -->
+                <div class="p-6">
+                    <!-- Brand Info -->
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-building text-blue-600"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="font-medium text-gray-900">{{ campaign.brand.user.company_name }}</h3>
+                            <p class="text-sm text-gray-500">{{ campaign.brand.industry|default:"Various Industries" }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Campaign Title & Description -->
+                    <h2 class="text-xl font-bold text-gray-900 mb-3">{{ campaign.title }}</h2>
+                    <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ campaign.description|truncatechars:120 }}</p>
+
+                    <!-- Platforms -->
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        {% for platform in campaign.platforms %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                        {% if platform == 'META' %}bg-blue-100 text-blue-800
+                                        {% elif platform == 'TIKTOK' %}bg-pink-100 text-pink-800
+                                        {% elif platform == 'GOOGLE' %}bg-green-100 text-green-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ platform }}
+                            </span>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Key Details -->
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">Budget:</span>
+                            <span class="font-medium text-gray-900">
+                                {{ campaign.budget_min|floatformat:0 }} - {{ campaign.budget_max|floatformat:0 }} DKK
+                            </span>
+                        </div>
+                        
+                        {% if campaign.target_roas %}
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">Target ROAS:</span>
+                            <span class="font-medium text-gray-900">{{ campaign.target_roas }}x</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if campaign.target_cpa %}
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-500">Target CPA:</span>
+                            <span class="font-medium text-gray-900">{{ campaign.target_cpa|floatformat:0 }} DKK</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Competition Stats -->
+                    <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                        <div class="flex items-center justify-between">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-600">{{ campaign.bid_count }}</div>
+                                <div class="text-xs text-gray-500">Bids Submitted</div>
+                            </div>
+                            <div class="text-center">
+                                {% if campaign.time_remaining %}
+                                    <div class="countdown-timer text-white px-3 py-1 rounded-full text-sm font-bold">
+                                        {% if campaign.time_remaining.days > 0 %}
+                                            {{ campaign.time_remaining.days }}d {{ campaign.time_remaining.seconds|div:3600 }}h
+                                        {% else %}
+                                            {{ campaign.time_remaining.seconds|div:3600 }}h {{ campaign.time_remaining.seconds|div:60|mod:60 }}m
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">Time Left</div>
+                                {% else %}
+                                    <div class="text-sm font-medium text-red-600">Expired</div>
+                                    <div class="text-xs text-gray-500">Bidding Closed</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex space-x-3">
+                        <a href="{% url 'marketplace:detail' campaign.pk %}" 
+                           class="flex-1 bg-blue-600 text-white text-center py-2 px-4 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">
+                            View Details
+                        </a>
+                        {% if campaign.time_remaining %}
+                            <a href="{% url 'campaigns:bid' campaign.pk %}" 
+                               class="flex-1 border border-blue-600 text-blue-600 text-center py-2 px-4 rounded-md hover:bg-blue-50 transition-colors text-sm font-medium">
+                                Bid Now
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-span-full">
+                <div class="text-center py-12">
+                    <i class="fas fa-search text-gray-300 text-6xl mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No campaigns found</h3>
+                    <p class="text-gray-500 mb-6">Try adjusting your search criteria or check back later for new opportunities.</p>
+                    <a href="{% url 'marketplace:list' %}" 
+                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-refresh mr-2"></i>
+                        Clear Filters
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+        <div class="mt-8 flex items-center justify-between">
+            <div class="text-sm text-gray-700">
+                Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} campaigns
+            </div>
+            
+            <nav class="flex items-center space-x-2">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_platform %}&platform={{ current_platform }}{% endif %}{% if current_budget %}&budget={{ current_budget }}{% endif %}"
+                       class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                        Previous
+                    </a>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="px-3 py-2 text-sm font-medium text-white bg-blue-600 border border-blue-600 rounded-md">
+                            {{ num }}
+                        </span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_platform %}&platform={{ current_platform }}{% endif %}{% if current_budget %}&budget={{ current_budget }}{% endif %}"
+                           class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                            {{ num }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if current_search %}&search={{ current_search }}{% endif %}{% if current_platform %}&platform={{ current_platform }}{% endif %}{% if current_budget %}&budget={{ current_budget }}{% endif %}"
+                       class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                        Next
+                    </a>
+                {% endif %}
+            </nav>
+        </div>
+    {% endif %}
+
+    <!-- Marketplace Stats -->
+    <div class="mt-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-8 text-white">
+        <div class="text-center">
+            <h2 class="text-2xl font-bold mb-4">Join the Competition</h2>
+            <p class="text-blue-100 mb-6 max-w-2xl mx-auto">
+                With an average competitiveness score of {{ avg_competitiveness|floatformat:0 }}/100, 
+                agencies are bringing their A-game. Ready to compete?
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                <div class="text-center">
+                    <div class="text-3xl font-bold">{{ total_campaigns }}</div>
+                    <div class="text-blue-100">Active Campaigns</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold">{{ total_agencies }}</div>
+                    <div class="text-blue-100">Registered Agencies</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold">{{ avg_competitiveness|floatformat:0 }}</div>
+                    <div class="text-blue-100">Avg. Competition Score</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-refresh countdown timers
+setInterval(function() {
+    // Update countdown timers every minute
+    location.reload();
+}, 60000);
+</script>
+{% endblock %}
