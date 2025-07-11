@@ -1,12 +1,12 @@
-# payments/urls.py
-
 from django.urls import path
 from . import views
 
 app_name = 'payments'
 
 urlpatterns = [
-    path('', views.PaymentDashboardView.as_view(), name='dashboard'),
-    path('methods/', views.PaymentMethodsView.as_view(), name='methods'),
-    path('history/', views.PaymentHistoryView.as_view(), name='history'),
+    path('setup/<int:campaign_id>/', views.setup_campaign_payment, name='setup_escrow'),
+    path('webhook/stripe/', views.stripe_webhook, name='stripe_webhook'),
+    path('release/<int:campaign_id>/', views.check_payment_release, name='check_release'),
+    path('onboarding/', views.agency_onboarding, name='agency_onboarding'),
+    path('dashboard/', views.payment_dashboard, name='dashboard'),
 ]

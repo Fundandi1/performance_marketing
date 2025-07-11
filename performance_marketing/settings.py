@@ -115,3 +115,14 @@ LOGOUT_REDIRECT_URL = '/'
 
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.CustomUser'
+
+SHOPIFY_API_KEY = os.getenv('SHOPIFY_API_KEY')
+SHOPIFY_API_SECRET = os.getenv('SHOPIFY_API_SECRET') 
+SHOPIFY_WEBHOOK_SECRET = os.getenv('SHOPIFY_WEBHOOK_SECRET')
+
+# Site URL for webhooks and redirects
+SITE_URL = os.getenv('SITE_URL', 'https://yourdomain.com')
+
+# Stripe for payments
+STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
